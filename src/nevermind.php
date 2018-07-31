@@ -252,7 +252,7 @@ class nevermind
 }
 
 $NM = new neverMind();
-$NM->init();
+//$NM->init();
 $NM->start();
 $NM->test();
 
