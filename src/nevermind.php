@@ -17,21 +17,22 @@ class nevermind
     public $end;
     
     function __construct() {
+        file_put_contents('log_txt', "");
         $this->urlStart = "http://172.16.37.129/api/start";
         $this->urlTest = "http://172.16.37.129/api/test";
         $this->token = "tokennm";
         $this->name = "NeverMind";
         $this->current_value = $this->get_value_to_string($this->aTestStatus); //"00000";
+        $this->ciffer = 0;
         $this->current_column = 0;
-        $this->current_column = 1;
-        $this->current_row = 1;
+        $this->current_row = 0;
         $this->end = false;
         $this->set_TestStatusArray();
     }
 
     function set_TestStatusArray() {
         $this->aTestStatus = array();
-        for($i=0;$i<=$this->size;$i++) {
+        for($i=0;$i<$this->size;$i++) {
             $this->aTestStatus[$i] = array(
                 'ciffer' => 0,
                 'status' => 0
@@ -39,10 +40,13 @@ class nevermind
         }
         
     }
+    function trace() {
+        $this->log("COLUMN:".$this->current_column." ROW: ".$this->current_row." CIFFER: ".$this->ciffer." CUR:".$this->get_value_to_string());
+    }
     
     function init() {
         $this->to_find = rand(0, 99999); //"12345";
-        echo "To find:".$this->to_find;
+        echo "To find:".$this->to_find."\n";
         $this->size = 5;
         $this->quizz_id = 1;
         $this->set_TestStatusArray();
@@ -71,7 +75,6 @@ class nevermind
     	for($i=0;$i<count($this->aTestStatus);$i++) {
     		$valTmp .= $this->aTestStatus[$i]['ciffer'];
     	}	
-    	var_dump($valTmp); 
     	return $valTmp;
     }
     
@@ -79,17 +82,18 @@ class nevermind
     public function loop_vertical() {
         $this->log('LOOP VERT');
         
-    	$current_val = $this->get_value_to_string($this->aTestStatus);
+        //$this->aTestStatus[$this->current_column]++;
+    	//$current_val = $this->get_value_to_string($this->aTestStatus);
     	
-    	$val_to_inc = substr($current_val,$this->current_column,1);
-    	$val_inc = $this->next_value($val_to_inc);
+    	//$val_to_inc = substr($current_val,$this->current_column,1);
+    	$val_inc = $this->next_value($this->aTestStatus[$this->current_column]['ciffer']);
     	if($val_inc > 9) {
     		echo "Error : row val ".$val_inc." > 9";
     		exit;
     	}
+    	$this->aTestStatus[$this->current_column]['ciffer'] = $this->ciffer = $val_inc; 
     	$this->ciffer = $val_inc;
-    	$current_val[$this->current_column] = $val_inc;
-    
+    	    	 
     	return $current_val;
     }
     
@@ -113,8 +117,8 @@ class nevermind
     }
     
     public function log($str) {
-        file_put_contents('log_txt', $str, FILE_APPEND);
-        echo $str.'<br />';
+        file_put_contents('log_txt', $str."\n", FILE_APPEND);
+        echo $str."\n";
     } 
     
     public function send_start() {
@@ -136,7 +140,7 @@ class nevermind
         
         $json = file_get_contents($url, false, $params);
         
-        echo "<br /><br />My token: ";
+        echo "Start result:";
         var_dump($json);
         
     	return $json;
@@ -163,7 +167,7 @@ class nevermind
         
         $json = file_get_contents($url, false, $params);
         
-        echo "<br /><br />My token: ";
+        echo "Test result: ";
         var_dump($json);
         
     	return $json;
@@ -219,7 +223,7 @@ class nevermind
                 $this->log('END');
             }
 
-            var_dump($this->aTestStatus);
+            $this->trace();
             
         } while (!$this->end);
         
