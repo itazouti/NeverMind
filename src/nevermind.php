@@ -8,13 +8,15 @@ class nevermind
     public $aBannedValue = array();
     public $quizz_id = 1;
     public $size = 5;
-    public $to_find;
+    public $to_find = '12345';
     public $aTestStatus = array();
     public $current_value;
     public $current_ciffer;   
     public $current_column;
     public $current_row;
     public $end;
+    public $rate_good = 0;
+    
     
     function __construct() {
         file_put_contents('log_txt', "");
@@ -38,7 +40,7 @@ class nevermind
                 'status' => 0
             );
         }
-        
+        //var_dump($this->aTestStatus);
     }
     function trace() {
         $this->log("COLUMN:".$this->current_column." ROW: ".$this->current_row." CIFFER: ".$this->ciffer." CUR:".$this->get_value_to_string());
@@ -93,7 +95,8 @@ class nevermind
     	}
     	$this->aTestStatus[$this->current_column]['ciffer'] = $this->ciffer = $val_inc; 
     	$this->ciffer = $val_inc;
-    	    	 
+    	$this->current_row = $val_inc;
+    	
     	return;
     }
     
@@ -122,7 +125,7 @@ class nevermind
     } 
     
     public function send_start() {
-        $content = array('token', 'tokennm');
+        //$content = array('token', 'tokennm');
         $url = "http://172.16.37.129/api/start";
         $getdata = http_build_query(array(
                 'name' => $this->name,
@@ -147,7 +150,7 @@ class nevermind
     }
     
     public function send_test() {
-        $content = array('result' => '12345', 'token', 'tokennm');
+       // $content = array('result' => '12345', 'token', 'tokennm');
         $url = "http://172.16.37.129/api/test";
         $getdata = http_build_query(
             array(
@@ -167,7 +170,7 @@ class nevermind
         
         $json = file_get_contents($url, false, $params);
         
-        echo "Test result: ";
+        echo "Test result for : ".$this->current_value;
         var_dump($json);
         
     	return $json;
@@ -186,6 +189,7 @@ class nevermind
             $this->wrong_place = 0;
         
             $this->log('TEST');
+            $this->current_value = $this->get_value_to_string();
             
             //send test
             if ($this->current_value != $this->to_find) {
@@ -193,28 +197,39 @@ class nevermind
                 $result = json_decode($json_result,true);
                 $this->good = $result['good'];
                 $this->wrong_place = $result['wrong_place'];
+                $this->error = $result['error'];
+                if(!empty($this->error)) exit; 
+                //"{"Error":"Answer already found"}"
             }
         
-            if($this->good == 0 && $this->wrong_place == 0) {
+            if($this->good == $this->rate_good ) { //&& $this->wrong_place == 0
                 $this->log('NO GOOD NO WRONG');
                 
                 //add banned value
                 $this->aBannedValue[] = $this->ciffer; //checher le chiffre
-        
+                //var_dump($this->aBannedValue);
+                
                 $val = $this->loop_vertical();
         
-            } elseif($this->good == 1) {
+            } elseif($this->good == $this->rate_good+1) {
                 $this->log('GOOD');
+                $this->rate_good++;
+                
+                if ($this->current_value == $this->to_find) {
+                    $this->end = true;
+                    $this->log('END');
+                    exit;
+                }
                 
                 // ok -> next column
                 $aTestStatus[$this->current_column]['status'] = 1;
                 $val = $this->loop_horizontal();
         
-            } elseif($this->wrong_place == 1) {
+            } elseif($this->wrong_place != 0) {
                 $this->log('WRONG PLACE');
                 
                 // next column to find right column
-                $val = $this->loop_horizontal();
+                //$val = $this->loop_horizontal();
         
             }
         
@@ -233,7 +248,7 @@ class nevermind
 
 $NM = new neverMind();
 $NM->init();
-//$NM->start();
+$NM->start();
 $NM->test();
 
 echo "Finish"
