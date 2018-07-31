@@ -150,6 +150,11 @@ class nevermind
     }
     
     public function send_test() {
+       
+        if ($this->current_value == $this->to_find){
+            exit;    
+        }
+        
        // $content = array('result' => '12345', 'token', 'tokennm');
         $url = "http://172.16.37.129/api/test";
         $getdata = http_build_query(
@@ -197,7 +202,7 @@ class nevermind
                 $result = json_decode($json_result,true);
                 $this->good = $result['good'];
                 $this->wrong_place = $result['wrong_place'];
-                $this->error = $result['error'];
+                $this->error = $result['Error'];
                 if(!empty($this->error)) exit; 
                 //"{"Error":"Answer already found"}"
             }
