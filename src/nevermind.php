@@ -94,7 +94,7 @@ class nevermind
     	$this->aTestStatus[$this->current_column]['ciffer'] = $this->ciffer = $val_inc; 
     	$this->ciffer = $val_inc;
     	    	 
-    	return $current_val;
+    	return;
     }
     
     //return string
@@ -109,7 +109,7 @@ class nevermind
     
     	$val = $this->loop_vertical();
     
-    	return $val;
+    	return;
     }
     
     public function set_position() {
