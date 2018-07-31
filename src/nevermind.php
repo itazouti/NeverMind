@@ -10,13 +10,20 @@ class nevermind
     public $size = 5;
     public $to_find;
     public $aTestStatus = array();
+    public $current_value;
+    public $current_column;
+    public $current_row;
+    public $end;
     
     function __construct() {
-        $current_value = get_value_to_string($this->aTestStatus); //"00000";
-        $current_column = 1;
-        $current_row = 1;
-        $end = false;
-        
+        $this->urlStart = "http://172.16.37.129/api/start";
+        $this->urlTest = "http://172.16.37.129/api/test";
+        $this->token = "tokennm";
+        $this->name = "NeverMind";
+        $this->current_value = get_value_to_string($this->aTestStatus); //"00000";
+        $this->current_column = 1;
+        $this->current_row = 1;
+        $this->end = false;
     }
 
     function set_Array() {
@@ -32,7 +39,7 @@ class nevermind
     
     function init() {
         $this->to_find = rand(0, 99999); //"12345";
-        echo "To find:".$tofind;
+        echo "To find:".$this->tofind;
         $this->size = 5;
         $this->quizz_id = 1;
     }
@@ -54,41 +61,41 @@ class nevermind
     }
     
     //return string
-    public function get_value_to_string($aTestStatus) {
+    public function get_value_to_string() {
     	$aValTmp="";
-    	for($i=0;$i<count($aTestStatus);$i++) {
-    		$aValTmp[] = $aTestStatus[$i][val];
+    	for($i=0;$i<count($this->aTestStatus);$i++) {
+    		$aValTmp[] = $this->aTestStatus[$i][val];
     	}	
     	$val = implode ( "", $aValTmp);
     	return $val;
     }
     
     //return string
-    public function loop_vertical($aTestStatus, $current_column) {
+    public function loop_vertical() {
     	
-    	$current_val = get_value_to_string($aTestStatus);
+    	$current_val = get_value_to_string($this->aTestStatus);
     	
-    	$val_to_inc = substr($current_val,$current_column,1);
+    	$val_to_inc = substr($current_val,$this->current_column,1);
     	$val_inc = next_value($val_to_inc);
     	if($val_inc > 9) {
     		echo "Error : row val ".val_inc." > 9";
     		exit;
     	}
-    	$current_val[$current_column] = $val_inc;
+    	$current_val[$this->current_column] = $val_inc;
     
     	return $current_val;
     }
     
     //return string
-    public function loop_horizontal($aTestStatus, $current_column, $size) {
+    public function loop_horizontal() {
     	
-    	$current_column++;
-    	if($current_column > $size) {
-    		echo "Error : column ".$current_column." > size ".$size;
+    	$this->current_column++;
+    	if($this->current_column > $this->size) {
+    		echo "Error : column ".$this->current_column." > size ".$this->size;
     		exit;
     	}
     
-    	$val = loop_vertical($aTestStatus, $current_column);
+    	$val = $this->loop_vertical();
     
     	return $val;
     }
@@ -116,44 +123,44 @@ class nevermind
         
         do {
         
-            $good = 0;
-            $wrong_place = 0;
+            $this->good = 0;
+            $this->wrong_place = 0;
         
             //send test
-            if ($current_test != $to_find) {
-                $json_result = send_test($val);
+            if ($this->current_test != $this->to_find) {
+                $json_result = $this->send_test($val);
                 $result = json_decode($json_result,true);
-                $good = $result['good'];
-                $wrong_place = $result['wrong_place'];
+                $this->good = $result['good'];
+                $this->wrong_place = $result['wrong_place'];
             }
         
             //json
         
-            if($good == 0 && $wrong_place == 0) {
+            if($this->good == 0 && $this->wrong_place == 0) {
         
                 //add banned value
-                $aBannedValue[] = $ciffer; //checher le chiffre
+                $this->aBannedValue[] = $ciffer; //checher le chiffre
         
-                $val = loop_vertical($aTestStatus, $current_column);
+                $val = $this->loop_vertical();
         
-            } elseif($good == 1) {
+            } elseif($this->good == 1) {
         
                 // ok -> next column
-                $aTestStatus[$current_column]['status'] = 1;
-                $val = loop_horizontal($aTestStatus, $current_column, $size);
+                $aTestStatus[$this->current_column]['status'] = 1;
+                $val = $this->loop_horizontal();
         
-            } elseif($wrong_place == 1) {
+            } elseif($this->wrong_place == 1) {
         
                 // next column to find right column
-                $val = loop_horizontal($aTestStatus, $current_column, $size);
+                $val = $this->loop_horizontal();
         
             }
         
-            if ($current_test == $to_find) {
-                $end = true;
+            if ($this->current_test == $this->to_find) {
+                $this->end = true;
             }
         
-        } while (!$end);
+        } while (!$this->end);
         
         return;
     }
