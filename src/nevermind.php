@@ -191,7 +191,8 @@ class nevermind
         
         $json = file_get_contents($url, false, $params);
         
-        $this->log("Test result for : ".$this->current_value);
+        $this->log("SEND TEST : ".$this->current_value);
+        $this->log("RESULT : ");
         var_dump($json);
         
     	return $json;
@@ -227,7 +228,8 @@ class nevermind
             }
         }
         
-        $this->log("Test result for : ".$this->current_value);
+        $this->log("SEND TEST : ".$this->current_value);
+        $this->log("RESULT : ");
 
         $json = json_encode(array("good"=>$good,"wrong_place"=>$wrong_place));
         var_dump($json);
@@ -325,7 +327,7 @@ class nevermind
                 $this->good = $result['good'];
                 $this->wrong_place = $result['wrong_place'];
                 $this->error = $result['Error'];
-                $this->log("VALUE: ".$this->current_value." GOOD:".$this->good);
+                //$this->log("VALUE: ".$this->current_value." GOOD:".$this->good);
                 $this->aNumberStatus[] = $this->good;
                 if(!empty($this->error)) {
                     $this->log("Error Ciffers");
@@ -375,7 +377,7 @@ class nevermind
         
         $this->current_value = str_repeat($this->aInvalidCiffer[0],$this->size);
         
-        $this->previous_good = 0;
+        $this->previous_good = $this->aNumberStatus[0];
         
         //test chaque chiffre puis passe a la position suivante lorsque goot est incrémenté
         for($pos=0;$pos<$this->size;$pos++) {
@@ -383,6 +385,7 @@ class nevermind
             $iCiffer = 0;
             
             do {
+                $this->log('###########################################');
                 $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
                 
                 //var_dump($this->aValidCiffer);
@@ -406,10 +409,19 @@ class nevermind
                 
                 $this->log('GOOD :'.$this->good.' POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(",",$this->aValidCiffer).' INVALID : '.implode(",",$this->aInvalidCiffer));
                 
-                $this->log('pos == (pos + good - rate) POS :'.$pos.'GOOD :'.$this->good.' STATUS : '.$this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]]);
+                //$this->log('pos == (pos + good - rate) POS :'.$pos.' + GOOD :'.$this->good.' - STATUS : '.$this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]]);
+                $this->log('PREV_GOOD :'.$this->previous_good.' == GOOD :'.$this->good);
+                
+                if ($this->previous_good > $this->good) {
+                    $iCiffer--;
+                    
+                    break;    
+                }
                 
             //} while( $this->good == $pos );
-            } while( $pos == $pos + $this->good - $this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]] );
+            //} while( $pos == $pos + $this->good - $this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]] );
+            } while($this->previous_good == $this->good);
+            
             
             $this->previous_good = $this->good;
             
