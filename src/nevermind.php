@@ -1,16 +1,16 @@
 <?php
 class nevermind
 {
-    public $urlStart = "http://172.16.37.129/api/start";
-    public $urlTest = "http://172.16.37.129/api/test";
-    public $token = "tokennm";
-    public $name = "NeverMind";
+    public $urlStart;
+    public $urlTest;
+    public $token;
+    public $name;
     public $aBannedValue = array();
-    public $quizz_id = 1;
+    public $quizz_id;
     public $size = 5;
     public $to_find = '12345';
     public $aTestStatus = array();
-    public $aNumberStatus = array();
+    public $aNumberStatus;
     public $current_value;
     public $current_ciffer;   
     public $current_column;
@@ -34,6 +34,11 @@ class nevermind
         $this->current_column = 0;
         $this->current_row = 0;
         $this->end = false;
+        $this->aValidCiffer = array();
+        $this->aInvalidCiffer = array();
+        $this->validCiffer = '';
+        $this->invalidCiffer = '';
+        $this->aNumberStatus = array();
         $this->set_TestStatusArray();
     }
 
@@ -49,10 +54,11 @@ class nevermind
     }
 
     function init() {
-        $this->size = 5;
+        $this->size = 15;
         $this->quizz_id = 1;
         $random = rand(0, 99999); //"12345";
         $this->to_find = str_pad($random, $this->size, "0", STR_PAD_LEFT);
+        $this->to_find = '135792468013579';
         echo "To find:".$this->to_find."\n";
         $this->set_TestStatusArray();
     }
@@ -300,13 +306,16 @@ class nevermind
     
         $this->log('TEST CIFFERS');
         
+        $count_good = 0;
+        $iSmallerOccurence = 0;
+        $smallerOccurence = $this->size+10;
+        
         for($i=0;$i<10;$i++) {
     
             $this->good = 0;
             $this->wrong_place = 0;
     
             $this->current_value = str_repeat($i,$this->size);
-            $this->aNumberStatus[] = $this->current_value;
             
             //send test
             if ($this->current_value != $this->to_find) {
@@ -316,8 +325,12 @@ class nevermind
                 $this->good = $result['good'];
                 $this->wrong_place = $result['wrong_place'];
                 $this->error = $result['Error'];
-                
-                if(!empty($this->error)) exit;
+                $this->log("VALUE: ".$this->current_value." GOOD:".$this->good);
+                $this->aNumberStatus[] = $this->good;
+                if(!empty($this->error)) {
+                    $this->log("Error Ciffers");
+                    break;
+                }
             }
     
             if($this->good==0) {
@@ -326,16 +339,32 @@ class nevermind
             }
             
             for($j=0;$j<$this->good;$j++) {
+                $count_good++;
                 $this->aValidCiffer[] = $i;
                 $this->validCiffer .= $i;
+                if($this->good < $smallerOccurence) {
+                    $smallerOccurence = $this->good;
+                    $iSmallerOccurence = $i;
+                }
             }
             //$this->trace();
             
             //IF ALL GOOD => EXIT
+            if($count_good == $this->size) {
+                //break;
+                $this->log("ADD rest of invalid that not exist in array valid");
+            }
+        }
+
+        // On ajoute le chiffre avec le moins d'occurence
+        if (empty($this->aInvalidCiffer)) {
+                $this->aInvalidCiffer[] = $iSmallerOccurence;
+                $this->invalidCiffer .= $iSmallerOccurence;
         }
         
-        $this->log('VALID CIFFERS : '.$this->validCiffer);
-        $this->log('INVALID CIFFERS : '.$this->invalidCiffer);
+        $this->log('VALID CIFF : '.implode(',',$this->aValidCiffer));
+        $this->log('VALID RATE : '.implode(",",$this->aNumberStatus));
+        $this->log('INVALID CIFFERS : '.implode(',',$this->aInvalidCiffer));
         
         return;
     }
@@ -346,14 +375,18 @@ class nevermind
         
         $this->current_value = str_repeat($this->aInvalidCiffer[0],$this->size);
         
+        $this->previous_good = 0;
+        
         //test chaque chiffre puis passe a la position suivante lorsque goot est incrémenté
         for($pos=0;$pos<$this->size;$pos++) {
             
             $iCiffer = 0;
             
             do {
-                //$this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer);
+                $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
                 
+                //var_dump($this->aValidCiffer);
+                // test ciffer à la position pos
                 $this->current_value[$pos] = $this->aValidCiffer[$iCiffer];
 
                 //send test
@@ -371,10 +404,22 @@ class nevermind
                 
                 $iCiffer++;
                 
-                //$this->log('GOOD '.$this->good.' POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID '.count($this->aValidCiffer));
+                $this->log('GOOD :'.$this->good.' POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(",",$this->aValidCiffer).' INVALID : '.implode(",",$this->aInvalidCiffer));
                 
+                $this->log('pos == (pos + good - rate) POS :'.$pos.'GOOD :'.$this->good.' STATUS : '.$this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]]);
                 
-            } while($this->good == $pos );
+            //} while( $this->good == $pos );
+            } while( $pos == $pos + $this->good - $this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]] );
+            
+            $this->previous_good = $this->good;
+            
+            // ajouter le chiffre trouvé à la liste des invalid.
+            $this->aInvalidCiffer[] = $this->aValidCiffer[$iCiffer-1];
+            $this->invalidCiffer .= $this->validCiffer[$iCiffer-1];
+            // retire le chiffre trouvé de la liste
+            unset($this->aValidCiffer[$iCiffer-1]);
+            $this->aValidCiffer = array_values($this->aValidCiffer);
+            substr($this->validCiffer, $iCiffer-1, 1);
             
         }      
         
