@@ -1,29 +1,26 @@
 <?php
 class nevermind
 {
-    public $urlStart;
-    public $urlTest;
-    public $token;
-    public $name;
-    public $quizz_id;
-    public $size;
-    public $to_find;
-    public $aNumberStatus;
-    public $current_value;
-    public $current_ciffer;   
-    public $current_column;
-    public $current_row;
-    public $count_call_api;
-    public $rate_good = 0;
-    public $noInvalidCiffer;
+    private $urlStart;
+    private $urlTest;
+    private $token;
+    private $name;
+    private $quizz_id;
+    private $size;
+    private $to_find;
+    private $aNumberStatus;
+    private $current_value;
+    private $current_ciffer;   
+    private $count_call_api;
+    private $noInvalidCiffer;
     private $aValidCiffer = array();
     private $validCiffer = "";
     private $aInvalidCiffer = array();
     private $invalidCiffer = "";
-    public $iSmallerOccurence;
+    private $iSmallerOccurence;
     
     function __construct() {
-        file_put_contents('NM.log', "");
+        //file_put_contents('NM.log', "");
         $this->urlStart = "http://172.16.37.129/api/start";
         $this->urlTest = "http://172.16.37.129/api/test";
         $this->token = "tokennm";
@@ -44,22 +41,22 @@ class nevermind
     }
 
 
-    function init() {
+    public function init() {
         $this->size = 15;
         $this->quizz_id = 1;
         $random = '';
         for($i=0;$i<$this->size;$i++) {
             $random .= rand(0, 9); //"12345";
         }
-        $this->to_find = $random; //str_pad($random, $this->size, "0", STR_PAD_LEFT);
+        //$this->to_find = $random; //str_pad($random, $this->size, "0", STR_PAD_LEFT);
         //$this->to_find = '135792468013579';
         //$this->to_find = '34680818';
         //$this->to_find = '53375480';
-        $this->to_find = '217038454166809';
-        echo "To find:".$this->to_find."\n";
+        //$this->to_find = '217038454166809';
+        if(!empty($this->to_find)) $this->log("TO FIND:".$this->to_find);
     }
     
-    function start() {
+    public function start() {
         //send start
         $json_result = $this->send_start();
         $result = json_decode($json_result,true);
@@ -67,16 +64,16 @@ class nevermind
         $this->quizz_id = $result['quizz_id'];
     }
     
-    public function log($str) {
-        file_put_contents('NM.log', $str."\n", FILE_APPEND);
+    private function log($str) {
+        //file_put_contents('NM.log', $str."\n", FILE_APPEND);
         echo $str."\n";
     }
     
-    function trace() {
+    private function trace() {
         $this->log("COLUMN:".$this->current_column." ROW: ".$this->current_row." CIFFER: ".$this->ciffer." CUR:".$this->get_value_to_string());
     }
     
-    public function send_start() {
+    private function send_start() {
 
         $getdata = http_build_query(array(
                 'name' => $this->name,
@@ -100,7 +97,7 @@ class nevermind
     	return $json;
     }
     
-    public function send_test() {
+    private function send_test() {
        
         $this->count_call_api++;
         
@@ -133,7 +130,7 @@ class nevermind
     	return $json;
     }
         
-    public function test_result() {
+    private function test_result() {
       
         $this->count_call_api++;
         
@@ -171,7 +168,7 @@ class nevermind
         return $json;
     }
     
-    public function check() {
+    private function check() {
         if($this->size == $this->good) {
             $this->stat();
             exit;
@@ -179,9 +176,9 @@ class nevermind
             return false;
     }
     
-    public function stat() {
+    private function stat() {
         $this->log('SIZE : '.$this->size);
-        $this->log('TO FIND : '.$this->to_find);
+        if(!empty($this->to_find)) $this->log('TO FIND : '.$this->to_find);
         $this->log('FOUND   : '.$this->current_value);
         $this->log('COUNT ITERATION : '.$this->count_call_api);
     }
@@ -207,8 +204,8 @@ class nevermind
                 exit;
             }
             
-            //$json_result = $this->send_test();
-            $json_result = $this->test_result();
+            $json_result = $this->send_test();
+            //$json_result = $this->test_result();
             $result = json_decode($json_result,true);
             $this->good = $result['good'];
             $this->wrong_place = $result['wrong_place'];
@@ -297,8 +294,8 @@ class nevermind
                 }
                 
                 //send test
-                //$json_result = $this->send_test();
-                $json_result = $this->test_result();
+                $json_result = $this->send_test();
+                //$json_result = $this->test_result();
                 $result = json_decode($json_result,true);
                 $this->good = $result['good'];
                 
@@ -347,10 +344,8 @@ class nevermind
             
         }      
         
-        $this->log('SIZE : '.$this->size);
-        $this->log('TO FIND : '.$this->to_find);
-        $this->log('FOUND   : '.$this->current_value);
-        $this->log('COUNT ITERATION : '.$this->count_call_api);
+        $this->stat();
+        exit;
     } 
 }
 ?>
