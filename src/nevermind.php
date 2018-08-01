@@ -10,12 +10,17 @@ class nevermind
     public $size = 5;
     public $to_find = '12345';
     public $aTestStatus = array();
+    public $aNumberStatus = array();
     public $current_value;
     public $current_ciffer;   
     public $current_column;
     public $current_row;
     public $end;
     public $rate_good = 0;
+    private $aValidCiffer = array();
+    private $validCiffer = "";
+    private $aInvalidCiffer = array();
+    private $invalidCiffer = "";
     
     
     function __construct() {
@@ -42,15 +47,13 @@ class nevermind
         }
         //var_dump($this->aTestStatus);
     }
-    function trace() {
-        $this->log("COLUMN:".$this->current_column." ROW: ".$this->current_row." CIFFER: ".$this->ciffer." CUR:".$this->get_value_to_string());
-    }
-    
+
     function init() {
-        $this->to_find = rand(0, 99999); //"12345";
-        echo "To find:".$this->to_find."\n";
         $this->size = 5;
         $this->quizz_id = 1;
+        $random = rand(0, 99999); //"12345";
+        $this->to_find = str_pad($random, $this->size, "0", STR_PAD_LEFT);
+        echo "To find:".$this->to_find."\n";
         $this->set_TestStatusArray();
     }
     
@@ -61,6 +64,15 @@ class nevermind
         $this->size = $result['size'];
         $this->quizz_id = $result['quizz_id'];
         $this->set_TestStatusArray();
+    }
+    
+    public function log($str) {
+        file_put_contents('log_txt', $str."\n", FILE_APPEND);
+        echo $str."\n";
+    }
+    
+    function trace() {
+        $this->log("COLUMN:".$this->current_column." ROW: ".$this->current_row." CIFFER: ".$this->ciffer." CUR:".$this->get_value_to_string());
     }
     
     //return int
@@ -119,11 +131,6 @@ class nevermind
     	
     }
     
-    public function log($str) {
-        file_put_contents('log_txt', $str."\n", FILE_APPEND);
-        echo $str."\n";
-    } 
-    
     public function send_start() {
         //$content = array('token', 'tokennm');
         $url = "http://172.16.37.129/api/start";
@@ -143,7 +150,8 @@ class nevermind
         
         $json = file_get_contents($url, false, $params);
         
-        echo "Start result:";
+        $this->log("Start result");
+        
         var_dump($json);
         
     	return $json;
@@ -152,7 +160,9 @@ class nevermind
     public function send_test() {
        
         if ($this->current_value == $this->to_find){
-            exit;    
+            $this->log("FOUND : ".$this->current_value);
+            
+            exit();    
         }
         
        // $content = array('result' => '12345', 'token', 'tokennm');
@@ -175,7 +185,7 @@ class nevermind
         
         $json = file_get_contents($url, false, $params);
         
-        echo "Test result for : ".$this->current_value;
+        $this->log("Test result for : ".$this->current_value);
         var_dump($json);
         
     	return $json;
@@ -185,20 +195,55 @@ class nevermind
     
     }
     
+    public function test_result() {
+        
+        if ($this->current_value == $this->to_find){
+            $this->log("FOUND : ".$this->current_value);
+        
+            exit();
+        }
+        
+        $good = 0;
+        $wrong_place = 0;
+        
+        $aCurVal = str_split($this->current_value);
+        $aToFind = str_split($this->to_find);
+        
+        for($i=0;$i<strlen($this->to_find);$i++) {
+            if($aCurVal[$i] == $aToFind[$i]){
+                $good++;
+            } else {
+                for($j=0;$j<strlen($this->to_find);$j++) {
+                    if($aCurVal[$i] == $aToFind[$j]){
+                        $wrong_place++;
+                    }    
+                }
+            }
+        }
+        
+        $this->log("Test result for : ".$this->current_value);
+
+        $json = json_encode(array("good"=>$good,"wrong_place"=>$wrong_place));
+        var_dump($json);
+        
+        return $json;
+    }
     
     public function test() {
+        
+        $this->log('TEST');
         
         do {
         
             $this->good = 0;
             $this->wrong_place = 0;
         
-            $this->log('TEST');
             $this->current_value = $this->get_value_to_string();
             
             //send test
             if ($this->current_value != $this->to_find) {
-                $json_result = $this->send_test();
+                //$json_result = $this->send_test();
+                $json_result = $this->test_result();
                 $result = json_decode($json_result,true);
                 $this->good = $result['good'];
                 $this->wrong_place = $result['wrong_place'];
@@ -207,12 +252,13 @@ class nevermind
                 //"{"Error":"Answer already found"}"
             }
         
+            
             if($this->good == $this->rate_good ) { //&& $this->wrong_place == 0
                 $this->log('NO GOOD NO WRONG');
                 
                 //add banned value
-                $this->aBannedValue[] = $this->ciffer; //checher le chiffre
-                //var_dump($this->aBannedValue);
+                //$this->aBannedValue[] = $this->ciffer; //checher le chiffre
+                //$this->log("Banned:".implode(",",$this->aBannedValue));
                 
                 $val = $this->loop_vertical();
         
@@ -249,12 +295,103 @@ class nevermind
         
         return;
     }
+    
+    public function test_ciffers() {
+    
+        $this->log('TEST CIFFERS');
+        
+        for($i=0;$i<10;$i++) {
+    
+            $this->good = 0;
+            $this->wrong_place = 0;
+    
+            $this->current_value = str_repeat($i,$this->size);
+            $this->aNumberStatus[] = $this->current_value;
+            
+            //send test
+            if ($this->current_value != $this->to_find) {
+                //$json_result = $this->send_test();
+                $json_result = $this->test_result();
+                $result = json_decode($json_result,true);
+                $this->good = $result['good'];
+                $this->wrong_place = $result['wrong_place'];
+                $this->error = $result['Error'];
+                
+                if(!empty($this->error)) exit;
+            }
+    
+            if($this->good==0) {
+                $this->aInvalidCiffer[] = $i;
+                $this->invalidCiffer .= $i;
+            }
+            
+            for($j=0;$j<$this->good;$j++) {
+                $this->aValidCiffer[] = $i;
+                $this->validCiffer .= $i;
+            }
+            //$this->trace();
+            
+            //IF ALL GOOD => EXIT
+        }
+        
+        $this->log('VALID CIFFERS : '.$this->validCiffer);
+        $this->log('INVALID CIFFERS : '.$this->invalidCiffer);
+        
+        return;
+    }
+    
+    public function test_positions() {
+        
+        $this->log('TEST POSITIONS');
+        
+        $this->current_value = str_repeat($this->aInvalidCiffer[0],$this->size);
+        
+        //test chaque chiffre puis passe a la position suivante lorsque goot est incrémenté
+        for($pos=0;$pos<$this->size;$pos++) {
+            
+            $iCiffer = 0;
+            
+            do {
+                //$this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer);
+                
+                $this->current_value[$pos] = $this->aValidCiffer[$iCiffer];
+
+                //send test
+                if ($this->current_value != $this->to_find) {
+                    //$json_result = $this->send_test();
+                    $json_result = $this->test_result();
+                    $result = json_decode($json_result,true);
+                    $this->good = $result['good'];
+                    $this->error = $result['Error'];
+                    if(!empty($this->error)) exit;
+                } else {
+                    $this->log('FOUND : '.$this->current_value);
+                    return;
+                }
+                
+                $iCiffer++;
+                
+                //$this->log('GOOD '.$this->good.' POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID '.count($this->aValidCiffer));
+                
+                
+            } while($this->good == $pos );
+            
+        }      
+        
+        $this->log('FOUND : '.$this->current_value);
+        
+    } 
 }
 
+//C:\Users\msa>cd /php
+//C:\php>php c:\var\www\html\Nevermind\src\nevermind.php
+
 $NM = new neverMind();
-//$NM->init();
-$NM->start();
-$NM->test();
+$NM->init();
+//$NM->start();
+//$NM->test();
+$NM->test_ciffers();
+$NM->test_positions();
 
 echo "Finish"
 ?>
