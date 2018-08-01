@@ -22,7 +22,7 @@ class nevermind
     
     
     function __construct() {
-        //file_put_contents('log_txt', "");
+        file_put_contents('NM.log', "");
         $this->urlStart = "http://172.16.37.129/api/start";
         $this->urlTest = "http://172.16.37.129/api/test";
         $this->token = "tokennm";
@@ -38,7 +38,6 @@ class nevermind
         $this->invalidCiffer = '';
         $this->aNumberStatus = array();
         $this->count_call_api = 0;
-        //$this->set_TestStatusArray();
     }
 
 
@@ -48,8 +47,8 @@ class nevermind
         $random = rand(0, str_repeat('9',$this->size)); //"12345";
         $this->to_find = str_pad($random, $this->size, "0", STR_PAD_LEFT);
         //$this->to_find = '135792468013579';
+        $this->to_find = '34680818';
         echo "To find:".$this->to_find."\n";
-        //$this->set_TestStatusArray();
     }
     
     function start() {
@@ -58,11 +57,10 @@ class nevermind
         $result = json_decode($json_result,true);
         $this->size = $result['size'];
         $this->quizz_id = $result['quizz_id'];
-        //$this->set_TestStatusArray();
     }
     
     public function log($str) {
-        //file_put_contents('log_txt', $str."\n", FILE_APPEND);
+        file_put_contents('NM.log', $str."\n", FILE_APPEND);
         echo $str."\n";
     }
     
@@ -71,7 +69,7 @@ class nevermind
     }
     
     public function send_start() {
-        $url = "http://172.16.37.129/api/start";
+
         $getdata = http_build_query(array(
                 'name' => $this->name,
                 'token' => $this->token
@@ -86,7 +84,7 @@ class nevermind
         );
         $params = stream_context_create($opts);
         
-        $json = file_get_contents($url, false, $params);
+        $json = file_get_contents($this->urlStart, false, $params);
         
         $this->log("SEND START");
         
@@ -101,12 +99,9 @@ class nevermind
         
         if ($this->current_value == $this->to_find){
             $this->log("FOUND : ".$this->current_value);
-            
             exit();    
         }
         
-       // $content = array('result' => '12345', 'token', 'tokennm');
-        $url = "http://172.16.37.129/api/test";
         $getdata = http_build_query(
             array(
                 'result' => $this->current_value,
@@ -123,9 +118,9 @@ class nevermind
         );
         $params = stream_context_create($opts);
         
-        $json = file_get_contents($url, false, $params);
+        $json = file_get_contents($this->urlTest, false, $params);
         
-        $this->log("SEND TEST : ".$this->current_value);
+        $this->log("SEND TEST : [".$this->current_value."]");
         $this->log("RESULT : ");
         var_dump($json);
         
@@ -148,6 +143,7 @@ class nevermind
         $aCurVal = str_split($this->current_value);
         $aToFind = str_split($this->to_find);
         
+        // FIND GOOD AND FIND WRONG PLACE
         for($i=0;$i<strlen($this->to_find);$i++) {
             if($aCurVal[$i] == $aToFind[$i]){
                 $good++;
@@ -160,7 +156,7 @@ class nevermind
             }
         }
         
-        $this->log("SEND TEST : ".$this->current_value);
+        $this->log("SEND TEST : [".$this->current_value."]");
         $this->log("RESULT : ");
 
         $json = json_encode(array("good"=>$good,"wrong_place"=>$wrong_place));
@@ -252,7 +248,7 @@ class nevermind
             
             do {
                 $this->log('###########################################');
-                //$this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
+                $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
                 
                 //var_dump($this->aValidCiffer);
                 // test ciffer à la position pos
