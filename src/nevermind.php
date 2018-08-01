@@ -247,7 +247,7 @@ class nevermind
             
             do {
                 $this->log('###########################################');
-                $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
+                //$this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
                 
                 //var_dump($this->aValidCiffer);
                 // test ciffer à la position pos
@@ -271,8 +271,7 @@ class nevermind
                 
                 $this->log('GOOD :'.$this->good.' POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(",",$this->aValidCiffer).' INVALID : '.implode(",",$this->aInvalidCiffer));
                 
-                //$this->log('pos == (pos + good - rate) POS :'.$pos.' + GOOD :'.$this->good.' - STATUS : '.$this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]]);
-                $this->log('PREV_GOOD :'.$this->previous_good.' == GOOD :'.$this->good);
+                //$this->log('PREV_GOOD :'.$this->previous_good.' == GOOD :'.$this->good);
                 
                 if ($this->previous_good > $this->good) {
                     $iCiffer--;
