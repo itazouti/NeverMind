@@ -186,10 +186,10 @@ class nevermind
                 $result = json_decode($json_result,true);
                 $this->good = $result['good'];
                 $this->wrong_place = $result['wrong_place'];
-                $this->error = $result['Error'];
+                //$this->error = $result['Error'];
                 //$this->log("VALUE: ".$this->current_value." GOOD:".$this->good);
                 $this->aNumberStatus[] = $this->good;
-                if(!empty($this->error)) {
+                if(isset($result['Error']) && !empty(isset($result['Error']))) {
                     $this->log("Error Ciffers");
                     break;
                 }
@@ -259,8 +259,8 @@ class nevermind
                     $json_result = $this->test_result();
                     $result = json_decode($json_result,true);
                     $this->good = $result['good'];
-                    $this->error = $result['Error'];
-                    if(!empty($this->error)) exit;
+                    //$this->error = $result['Error'];
+                    if(isset($result['Error']) && !empty(isset($result['Error']))) exit;
                 } else {
                     $this->log('TO FIND : '.$this->to_find);
                     $this->log('FOUND   : '.$this->current_value);

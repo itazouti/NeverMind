@@ -1,0 +1,29 @@
+TEST CIFFERS
+Test result for : 00000
+Test result for : 11111
+Test result for : 22222
+Test result for : 33333
+Test result for : 44444
+Test result for : 55555
+Test result for : 66666
+Test result for : 77777
+Test result for : 88888
+Test result for : 99999
+VALID CIFFERS : 03488
+INVALID CIFFERS : 125679
+TEST POSITIONS
+Test result for : 01111
+Test result for : 00111
+Test result for : 03111
+Test result for : 04111
+Test result for : 08111
+Test result for : 08011
+Test result for : 08311
+Test result for : 08411
+Test result for : 08401
+Test result for : 08431
+Test result for : 08430
+Test result for : 08433
+Test result for : 08434
+FOUND : 08438
+Start result
