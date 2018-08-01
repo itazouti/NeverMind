@@ -4,3 +4,7 @@ php:
 
 install:
   - composer install
+
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t 34cc056a-f93b-49f8-9017-18b226d5ede2
