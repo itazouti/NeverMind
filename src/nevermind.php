@@ -134,14 +134,8 @@ class nevermind
     }
         
     public function test_result() {
-        
+      
         $this->count_call_api++;
-        
-        if ($this->current_value == $this->to_find){
-            $this->log("FOUND : ".$this->current_value);
-        
-            exit();
-        }
         
         $good = 0;
         $wrong_place = 0;
@@ -177,6 +171,21 @@ class nevermind
         return $json;
     }
     
+    public function check() {
+        if($this->size == $this->good) {
+            $this->stat();
+            exit;
+        } else 
+            return false;
+    }
+    
+    public function stat() {
+        $this->log('SIZE : '.$this->size);
+        $this->log('TO FIND : '.$this->to_find);
+        $this->log('FOUND   : '.$this->current_value);
+        $this->log('COUNT ITERATION : '.$this->count_call_api);
+    }
+    
     public function test_ciffers() {
     
         $this->log('TEST CIFFERS');
@@ -193,19 +202,27 @@ class nevermind
             $this->current_value = str_repeat($i,$this->size);
             
             //send test
-            if ($this->current_value != $this->to_find) {
-                //$json_result = $this->send_test();
-                $json_result = $this->test_result();
-                $result = json_decode($json_result,true);
-                $this->good = $result['good'];
-                $this->wrong_place = $result['wrong_place'];
-                //$this->error = $result['Error'];
-                //$this->log("VALUE: ".$this->current_value." GOOD:".$this->good);
-                $this->aNumberStatus[] = $this->good;
-                if(isset($result['Error']) && !empty(isset($result['Error']))) {
-                    $this->log("Error Ciffers");
-                    break;
-                }
+            if ($this->current_value == $this->to_find) {
+                $this->stat();
+                exit;
+            }
+            
+            //$json_result = $this->send_test();
+            $json_result = $this->test_result();
+            $result = json_decode($json_result,true);
+            $this->good = $result['good'];
+            $this->wrong_place = $result['wrong_place'];
+            //$this->error = $result['Error'];
+            //$this->log("VALUE: ".$this->current_value." GOOD:".$this->good);
+            $this->aNumberStatus[] = $this->good;
+            if(isset($result['Error']) && !empty(isset($result['Error']))) {
+                $this->log("Error Ciffers");
+                break;
+            }
+            
+            if($this->check()) {
+                $this->stat();
+                exit;
             }
     
             if($this->good==0) {
@@ -229,6 +246,8 @@ class nevermind
                 //break;
                 $this->log("ADD rest of invalid that not exist in array valid");
             }
+            
+            
         }
 
         // Si pas de chiffre invalide, on ajoute le chiffre avec le moins d'occurence
@@ -272,21 +291,23 @@ class nevermind
                 // test ciffer à la position pos
                 $this->current_value[$pos] = $this->aValidCiffer[$iCiffer];
 
+                if ($this->current_value == $this->to_find) {
+                    $this->stat();
+                    exit;
+                }
+                
                 //send test
-                if ($this->current_value != $this->to_find) {
-                    //$json_result = $this->send_test();
-                    $json_result = $this->test_result();
-                    $result = json_decode($json_result,true);
-                    $this->good = $result['good'];
-                    //$this->error = $result['Error'];
-                    if(isset($result['Error']) && !empty(isset($result['Error']))) exit;
-                } else {
-                    $this->log('SIZE : '.$this->size);
-                    $this->log('TO FIND : '.$this->to_find);
-                    $this->log('FOUND   : '.$this->current_value);
-                    $this->log('COUNT ITERATION : '.$this->count_call_api);
-                    
-                    return;
+                //$json_result = $this->send_test();
+                $json_result = $this->test_result();
+                $result = json_decode($json_result,true);
+                $this->good = $result['good'];
+                
+                if(isset($result['Error']) && !empty(isset($result['Error']))) exit;
+
+                if($this->check())
+                {
+                    $this->stat();
+                    exit;
                 }
                 
                 $iCiffer++;
