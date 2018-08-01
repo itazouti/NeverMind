@@ -13,7 +13,7 @@ class nevermind
     public $current_ciffer;   
     public $current_column;
     public $current_row;
-    public $end;
+    public $count_call_api;
     public $rate_good = 0;
     private $aValidCiffer = array();
     private $validCiffer = "";
@@ -37,16 +37,17 @@ class nevermind
         $this->validCiffer = '';
         $this->invalidCiffer = '';
         $this->aNumberStatus = array();
+        $this->count_call_api = 0;
         //$this->set_TestStatusArray();
     }
 
 
     function init() {
-        $this->size = 15;
+        $this->size = 8;
         $this->quizz_id = 1;
-        $random = rand(0, 99999); //"12345";
+        $random = rand(0, str_repeat('9',$this->size)); //"12345";
         $this->to_find = str_pad($random, $this->size, "0", STR_PAD_LEFT);
-        $this->to_find = '135792468013579';
+        //$this->to_find = '135792468013579';
         echo "To find:".$this->to_find."\n";
         //$this->set_TestStatusArray();
     }
@@ -96,6 +97,8 @@ class nevermind
     
     public function send_test() {
        
+        $this->count_call_api++;
+        
         if ($this->current_value == $this->to_find){
             $this->log("FOUND : ".$this->current_value);
             
@@ -130,6 +133,8 @@ class nevermind
     }
         
     public function test_result() {
+        
+        $this->count_call_api++;
         
         if ($this->current_value == $this->to_find){
             $this->log("FOUND : ".$this->current_value);
@@ -262,8 +267,11 @@ class nevermind
                     //$this->error = $result['Error'];
                     if(isset($result['Error']) && !empty(isset($result['Error']))) exit;
                 } else {
+                    $this->log('SIZE : '.$this->size);
                     $this->log('TO FIND : '.$this->to_find);
                     $this->log('FOUND   : '.$this->current_value);
+                    $this->log('COUNT ITERATION : '.$this->count_call_api);
+                    
                     return;
                 }
                 
@@ -298,9 +306,10 @@ class nevermind
             
         }      
         
+        $this->log('SIZE : '.$this->size);
         $this->log('TO FIND : '.$this->to_find);
         $this->log('FOUND   : '.$this->current_value);
-        
+        $this->log('COUNT ITERATION : '.$this->count_call_api);
     } 
 }
 ?>
