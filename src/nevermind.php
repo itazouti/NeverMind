@@ -5,11 +5,9 @@ class nevermind
     public $urlTest;
     public $token;
     public $name;
-    public $aBannedValue = array();
     public $quizz_id;
-    public $size = 5;
-    public $to_find = '12345';
-    public $aTestStatus = array();
+    public $size;
+    public $to_find;
     public $aNumberStatus;
     public $current_value;
     public $current_ciffer;   
@@ -24,12 +22,12 @@ class nevermind
     
     
     function __construct() {
-        file_put_contents('log_txt', "");
+        //file_put_contents('log_txt', "");
         $this->urlStart = "http://172.16.37.129/api/start";
         $this->urlTest = "http://172.16.37.129/api/test";
         $this->token = "tokennm";
         $this->name = "NeverMind";
-        $this->current_value = $this->get_value_to_string($this->aTestStatus); //"00000";
+        $this->current_value = '';
         $this->ciffer = 0;
         $this->current_column = 0;
         $this->current_row = 0;
@@ -39,19 +37,9 @@ class nevermind
         $this->validCiffer = '';
         $this->invalidCiffer = '';
         $this->aNumberStatus = array();
-        $this->set_TestStatusArray();
+        //$this->set_TestStatusArray();
     }
 
-    function set_TestStatusArray() {
-        $this->aTestStatus = array();
-        for($i=0;$i<$this->size;$i++) {
-            $this->aTestStatus[$i] = array(
-                'ciffer' => 0,
-                'status' => 0
-            );
-        }
-        //var_dump($this->aTestStatus);
-    }
 
     function init() {
         $this->size = 15;
@@ -60,7 +48,7 @@ class nevermind
         $this->to_find = str_pad($random, $this->size, "0", STR_PAD_LEFT);
         $this->to_find = '135792468013579';
         echo "To find:".$this->to_find."\n";
-        $this->set_TestStatusArray();
+        //$this->set_TestStatusArray();
     }
     
     function start() {
@@ -69,11 +57,11 @@ class nevermind
         $result = json_decode($json_result,true);
         $this->size = $result['size'];
         $this->quizz_id = $result['quizz_id'];
-        $this->set_TestStatusArray();
+        //$this->set_TestStatusArray();
     }
     
     public function log($str) {
-        file_put_contents('log_txt', $str."\n", FILE_APPEND);
+        //file_put_contents('log_txt', $str."\n", FILE_APPEND);
         echo $str."\n";
     }
     
@@ -81,64 +69,7 @@ class nevermind
         $this->log("COLUMN:".$this->current_column." ROW: ".$this->current_row." CIFFER: ".$this->ciffer." CUR:".$this->get_value_to_string());
     }
     
-    //return int
-    public function next_value($val) {
-    	do {
-    		$val++;
-    	} while (in_array($val,$this->aBannedValue ));
-    	return $val;
-    }
-    
-    //return string
-    public function get_value_to_string() {
-    	$valTmp="";
-    	for($i=0;$i<count($this->aTestStatus);$i++) {
-    		$valTmp .= $this->aTestStatus[$i]['ciffer'];
-    	}	
-    	return $valTmp;
-    }
-    
-    //return string
-    public function loop_vertical() {
-        $this->log('LOOP VERT');
-        
-        //$this->aTestStatus[$this->current_column]++;
-    	//$current_val = $this->get_value_to_string($this->aTestStatus);
-    	
-    	//$val_to_inc = substr($current_val,$this->current_column,1);
-    	$val_inc = $this->next_value($this->aTestStatus[$this->current_column]['ciffer']);
-    	if($val_inc > 9) {
-    		echo "Error : row val ".$val_inc." > 9";
-    		exit;
-    	}
-    	$this->aTestStatus[$this->current_column]['ciffer'] = $this->ciffer = $val_inc; 
-    	$this->ciffer = $val_inc;
-    	$this->current_row = $val_inc;
-    	
-    	return;
-    }
-    
-    //return string
-    public function loop_horizontal() {
-        $this->log('LOOP HORZ');
-        
-    	$this->current_column++;
-    	if($this->current_column > $this->size) {
-    		echo "Error : column ".$this->current_column." > size ".$this->size;
-    		exit;
-    	}
-    
-    	$val = $this->loop_vertical();
-    
-    	return;
-    }
-    
-    public function set_position() {
-    	
-    }
-    
     public function send_start() {
-        //$content = array('token', 'tokennm');
         $url = "http://172.16.37.129/api/start";
         $getdata = http_build_query(array(
                 'name' => $this->name,
@@ -156,7 +87,7 @@ class nevermind
         
         $json = file_get_contents($url, false, $params);
         
-        $this->log("Start result");
+        $this->log("SEND START");
         
         var_dump($json);
         
@@ -197,11 +128,7 @@ class nevermind
         
     	return $json;
     }
-    
-    public function save_test() {
-    
-    }
-    
+        
     public function test_result() {
         
         if ($this->current_value == $this->to_find){
@@ -235,73 +162,6 @@ class nevermind
         var_dump($json);
         
         return $json;
-    }
-    
-    public function test() {
-        
-        $this->log('TEST');
-        
-        do {
-        
-            $this->good = 0;
-            $this->wrong_place = 0;
-        
-            $this->current_value = $this->get_value_to_string();
-            
-            //send test
-            if ($this->current_value != $this->to_find) {
-                //$json_result = $this->send_test();
-                $json_result = $this->test_result();
-                $result = json_decode($json_result,true);
-                $this->good = $result['good'];
-                $this->wrong_place = $result['wrong_place'];
-                $this->error = $result['Error'];
-                if(!empty($this->error)) exit; 
-                //"{"Error":"Answer already found"}"
-            }
-        
-            
-            if($this->good == $this->rate_good ) { //&& $this->wrong_place == 0
-                $this->log('NO GOOD NO WRONG');
-                
-                //add banned value
-                //$this->aBannedValue[] = $this->ciffer; //checher le chiffre
-                //$this->log("Banned:".implode(",",$this->aBannedValue));
-                
-                $val = $this->loop_vertical();
-        
-            } elseif($this->good == $this->rate_good+1) {
-                $this->log('GOOD');
-                $this->rate_good++;
-                
-                if ($this->current_value == $this->to_find) {
-                    $this->end = true;
-                    $this->log('END');
-                    exit;
-                }
-                
-                // ok -> next column
-                $aTestStatus[$this->current_column]['status'] = 1;
-                $val = $this->loop_horizontal();
-        
-            } elseif($this->wrong_place != 0) {
-                $this->log('WRONG PLACE');
-                
-                // next column to find right column
-                //$val = $this->loop_horizontal();
-        
-            }
-        
-            if ($this->current_value == $this->to_find) {
-                $this->end = true;
-                $this->log('END');
-            }
-
-            $this->trace();
-            
-        } while (!$this->end);
-        
-        return;
     }
     
     public function test_ciffers() {
@@ -378,6 +238,7 @@ class nevermind
         $this->current_value = str_repeat($this->aInvalidCiffer[0],$this->size);
         
         $this->previous_good = $this->aNumberStatus[0];
+        $this->previous_value = "";
         
         //test chaque chiffre puis passe a la position suivante lorsque goot est incrémenté
         for($pos=0;$pos<$this->size;$pos++) {
@@ -401,7 +262,8 @@ class nevermind
                     $this->error = $result['Error'];
                     if(!empty($this->error)) exit;
                 } else {
-                    $this->log('FOUND : '.$this->current_value);
+                    $this->log('TO FIND : '.$this->to_find);
+                    $this->log('FOUND   : '.$this->current_value);
                     return;
                 }
                 
@@ -414,9 +276,11 @@ class nevermind
                 
                 if ($this->previous_good > $this->good) {
                     $iCiffer--;
-                    
+                    $this->current_value  = $this->previous_value;
                     break;    
                 }
+                
+                $this->previous_value = $this->current_value;
                 
             //} while( $this->good == $pos );
             //} while( $pos == $pos + $this->good - $this->aNumberStatus[$this->aValidCiffer[$iCiffer-1]] );
@@ -435,7 +299,8 @@ class nevermind
             
         }      
         
-        $this->log('FOUND : '.$this->current_value);
+        $this->log('TO FIND : '.$this->to_find);
+        $this->log('FOUND   : '.$this->current_value);
         
     } 
 }
@@ -446,7 +311,6 @@ class nevermind
 $NM = new neverMind();
 $NM->init();
 //$NM->start();
-//$NM->test();
 $NM->test_ciffers();
 $NM->test_positions();
 
