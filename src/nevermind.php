@@ -1,8 +1,8 @@
 <?php
 class nevermind
 {
-    private $urlStart;
-    private $urlTest;
+    //private $urlStart;
+    //private $urlTest;
     private $token;
     private $name;
     private $quizz_id;
@@ -21,15 +21,14 @@ class nevermind
     
     function __construct() {
         //file_put_contents('NM.log', "");
-        $this->urlStart = "http://172.16.37.129/api/start";
-        $this->urlTest = "http://172.16.37.129/api/test";
+        //$this->urlStart = "http://172.16.37.129/api/start";
+        //$this->urlTest = "http://172.16.37.129/api/test";
         $this->token = "tokennm";
         $this->name = "NeverMind";
         $this->current_value = '';
         $this->ciffer = 0;
         $this->current_column = 0;
         $this->current_row = 0;
-        $this->end = false;
         $this->aValidCiffer = array();
         $this->aInvalidCiffer = array();
         $this->validCiffer = '';
@@ -75,6 +74,8 @@ class nevermind
     
     private function send_start() {
 
+        $url = "http://172.16.37.129/api/start";
+        
         $getdata = http_build_query(array(
                 'name' => $this->name,
                 'token' => $this->token
@@ -89,7 +90,7 @@ class nevermind
         );
         $params = stream_context_create($opts);
         
-        $json = file_get_contents($this->urlStart, false, $params);
+        $json = file_get_contents($url, false, $params);
         
         $this->log("SEND START");
         $this->log("RESPONSE => ".$json);
@@ -99,6 +100,8 @@ class nevermind
     
     private function send_test() {
        
+        $url = "http://172.16.37.129/api/test";
+        
         $this->count_call_api++;
         
         if ($this->current_value == $this->to_find){
@@ -122,7 +125,7 @@ class nevermind
         );
         $params = stream_context_create($opts);
         
-        $json = file_get_contents($this->urlTest, false, $params);
+        $json = file_get_contents($url, false, $params);
         
         $this->log("SEND TEST : [".$this->current_value."]");
         $this->log("RESPONSE => ".$json);
