@@ -172,9 +172,8 @@ class nevermind
         if($this->size == $this->good) {
             $this->stat();
             exit;
-        } else {
-            return false;
         }
+        return false;
     }
     
     private function stat() {
@@ -207,8 +206,8 @@ class nevermind
                 exit;
             }
             
-            $json_result = $this->send_test();
-            //$json_result = $this->test_result();
+            //$json_result = $this->send_test();
+            $json_result = $this->test_result();
             $result = json_decode($json_result,true);
             $this->good = $result['good'];
             $wrong_place = $result['wrong_place'];
@@ -294,8 +293,8 @@ class nevermind
                 }
                 
                 //send test
-                $json_result = $this->send_test();
-                //$json_result = $this->test_result();
+                //$json_result = $this->send_test();
+                $json_result = $this->test_result();
                 $result = json_decode($json_result,true);
                 $this->good = $result['good'];
                 
