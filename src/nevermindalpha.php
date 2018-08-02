@@ -71,8 +71,8 @@ class nevermind
     }
     
     private function send_start() {
-
-        $url = "http://172.16.37.129/api/start";
+        $url = "http://172.168.0.100:8000/api/start";
+        //$url = "http://172.16.37.129/api/start";
         
         $getdata = http_build_query(array(
                 'name' => $this->name,
@@ -97,8 +97,8 @@ class nevermind
     }
     
     private function send_test() {
-       
-        $url = "http://172.16.37.129/api/test";
+        $url = "http://172.168.0.100:8000/api/test";
+        //$url = "http://172.16.37.129/api/test";
         
         $this->count_call_api++;
         
