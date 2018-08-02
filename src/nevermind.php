@@ -13,9 +13,9 @@ class nevermind
     private $count_call_api;
     private $noInvalidCiffer;
     private $aValidCiffer = array();
-    private $validCiffer = "";
+    //private $validCiffer = "";
     private $aInvalidCiffer = array();
-    private $invalidCiffer = "";
+    //private $invalidCiffer = "";
     private $iSmallerOccurence;
     private $good;
     
@@ -28,8 +28,8 @@ class nevermind
         $this->current_value = '';
         $this->aValidCiffer = array();
         $this->aInvalidCiffer = array();
-        $this->validCiffer = '';
-        $this->invalidCiffer = '';
+        //$this->validCiffer = '';
+        //$this->invalidCiffer = '';
         $this->aNumberStatus = array();
         $this->count_call_api = 0;
         $this->noInvalidCiffer = false;
@@ -223,13 +223,13 @@ class nevermind
     
             if($this->good==0) {
                 $this->aInvalidCiffer[] = $i;
-                $this->invalidCiffer .= $i;
+                //$this->invalidCiffer .= $i;
             }
             
             for($j=0;$j<$this->good;$j++) {
                 $count_good++;
                 $this->aValidCiffer[] = $i;
-                $this->validCiffer .= $i;
+                //$this->validCiffer .= $i;
                 if($this->good < $smallerOccurence) {
                     $smallerOccurence = $this->good;
                     $this->iSmallerOccurence = $i;
@@ -249,7 +249,7 @@ class nevermind
         if (empty($this->aInvalidCiffer)) {
                 $this->noInvalidCiffer = true;
                 $this->aInvalidCiffer[] = $this->iSmallerOccurence;
-                $this->invalidCiffer .= $this->iSmallerOccurence;
+                //$this->invalidCiffer .= $this->iSmallerOccurence;
         }
         
         $this->log('VALID CIFFERS : '.implode(',',$this->aValidCiffer));
@@ -259,9 +259,11 @@ class nevermind
         return;
     }
     
-    public function test_positions() {
+    public function test_positions_good() {
         
         $this->log('TEST POSITIONS');
+        
+        $aUniqueValidCiffer = array_unique($this->aValidCiffer);
         
         $this->current_value = str_repeat($this->aInvalidCiffer[0],$this->size);
         
@@ -279,7 +281,7 @@ class nevermind
             $iCiffer = 0;
             
             do {
-                $this->log('###########################################');
+                $this->log($this->count_call_api.'###########################################');
                 $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
                 
                 // test ciffer ï¿½ la position pos
@@ -332,17 +334,108 @@ class nevermind
             
             // ajouter le chiffre trouvï¿½ ï¿½ la liste des invalid.
             $this->aInvalidCiffer[] = $this->aValidCiffer[$iCiffer-1];
-            $this->invalidCiffer .= $this->validCiffer[$iCiffer-1];
+            //$this->invalidCiffer .= $this->validCiffer[$iCiffer-1];
             
             // retire le chiffre trouvï¿½ de la liste
             unset($this->aValidCiffer[$iCiffer-1]);
             $this->aValidCiffer = array_values($this->aValidCiffer);
-            substr($this->validCiffer, $iCiffer-1, 1);
+            //substr($this->validCiffer, $iCiffer-1, 1);
             
         }      
         
         $this->stat();
         exit;
     } 
+    
+    public function test_positions() {
+    
+        $this->log('TEST POSITIONS');
+    
+        $aUniqueValidCiffer = array_unique($this->aValidCiffer);
+        $aUniqueValidCiffer = array_values($aUniqueValidCiffer);
+        
+        $this->current_value = str_repeat($this->aInvalidCiffer[0],$this->size);
+    
+        if($this->noInvalidCiffer) {
+            $previous_good = $this->aNumberStatus[$this->iSmallerOccurence];
+            $previous_value = "";
+            $previous_ciffer = "";
+        } else {
+            $previous_good = 0;
+            $previous_value = "";
+            $previous_ciffer = "";
+        }
+    
+        //test chaque chiffre puis passe a la position suivante lorsque goot est incrémenté
+        for($pos=0;$pos<$this->size;$pos++) {
+    
+            $iCiffer = 0;
+            $ciffer_to_test = '';
+            
+            do {
+                $this->log($this->count_call_api.'###########################################');
+                $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer).' UNIQUE : '.implode(',',$aUniqueValidCiffer));
+    
+                // test ciffer à la position pos
+                $ciffer_to_test = $aUniqueValidCiffer[$iCiffer];
+                $this->current_value[$pos] = $ciffer_to_test;
+                
+                if ($this->current_value == $this->to_find) {
+                    $this->stat();
+                    exit;
+                }
+    
+                //send test
+                //$json_result = $this->send_test();
+                $json_result = $this->test_result();
+                $result = json_decode($json_result,true);
+                $this->good = $result['good'];
+    
+                if(isset($result['Error']) && !empty(isset($result['Error']))) {
+                    exit;
+                }
+    
+                if($this->check())
+                {
+                    $this->stat();
+                    exit;
+                }
+    
+                $iCiffer++;
+    
+                $this->log('PREV GOOD :'.$previous_good.' GOOD :'.$this->good.' POS : '.$pos.' PCIF : '.$previous_ciffer.' CIF : '.$ciffer_to_test.' ICIF : '.$iCiffer.' VALID : '.implode(",",$this->aValidCiffer).' INVALID : '.implode(",",$this->aInvalidCiffer));
+    
+                if ($previous_good > $this->good) {
+                    if (empty($previous_value)) {
+                        echo "PREVIOUS EMPTY\n";
+                        $previous_good = $this->good;
+                    } else {
+                        $iCiffer--;
+                        $this->current_value  = $previous_value;
+                        $ciffer_to_test = $previous_ciffer;
+                        break;
+                    }
+                }
+    
+                $previous_value = $this->current_value;
+                $previous_ciffer = $ciffer_to_test;
+                
+            } while($previous_good == $this->good);
+    
+            $previous_good = $this->good;
+    
+            // ajouter le chiffre trouvé à la liste des invalid.
+            $this->aInvalidCiffer[] = $ciffer_to_test;
+    
+            // retire le chiffre trouvé de la liste
+            if (($key = array_search($ciffer_to_test, $this->aValidCiffer)) !== false) {
+                unset($this->aValidCiffer[$key]);
+            }
+            $this->aValidCiffer = array_values($this->aValidCiffer);
+        }
+    
+        $this->stat();
+        exit;
+    }
 }
 ?>
