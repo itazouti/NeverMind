@@ -7,7 +7,7 @@ echo "START Nevermind\n";
 
 $NM = new neverMind();
 $NM->init();
-//$NM->start();
+$NM->start();
 $NM->test_ciffers();
 $NM->test_positions();
 
