@@ -10,7 +10,6 @@ class nevermind
     private $to_find;
     private $aNumberStatus;
     private $current_value;
-    private $current_ciffer;   
     private $count_call_api;
     private $noInvalidCiffer;
     private $aValidCiffer = array();
@@ -203,7 +202,7 @@ class nevermind
             $this->good = 0;
             $wrong_place = 0;
     
-            $this->current_value = str_repeat($i,$this->size);
+            $this->current_value = str_repeat("$i",$this->size);
             
             //send test
             if ($this->current_value == $this->to_find) {
