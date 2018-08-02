@@ -242,8 +242,8 @@ class nevermind
             
             //IF ALL GOOD => EXIT
             if($count_good == $this->size) {
-                //break;
                 $this->log("ADD rest of invalid that not exist in array valid");
+                break;
             }
             
             
