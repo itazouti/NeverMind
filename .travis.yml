@@ -3,9 +3,7 @@ php:
   - 7.0
 
 
-install:
 
-     - pip install codecov
 
 before_script:
     - travis_retry composer self-update
@@ -15,4 +13,5 @@ script:
     - vendor/bin/phpunit --coverage-clover coverage.xml
 
 after_success:
+  -  pip install codecov
   - codecov
