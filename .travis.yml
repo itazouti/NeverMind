@@ -2,9 +2,6 @@ language: php
 php:
   - 7.0
 
-install:
-  - pip install tox
-  - pip install tox codecov
 
 
 
@@ -14,10 +11,6 @@ before_script:
 
 script:
     - vendor/bin/phpunit --coverage-clover coverage.xml
-    - tox
-
-
 
 after_success:
-
-     - codecov
+  - bash <(curl -s https://codecov.io/bash)
