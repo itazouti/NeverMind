@@ -10,7 +10,12 @@ before_script:
     - travis_retry composer install --no-interaction --prefer-source --dev
 
 script:
-    - vendor/bin/phpunit --coverage-clover=coverage.xml
+    - vendor/bin/phpunit --coverage-clover coverage.xml
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -t 34cc056a-f93b-49f8-9017-18b226d5ede2
+     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+             pip install codecov;
+       elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
+             pip3 install codecov;
+       fi
+     - codecov

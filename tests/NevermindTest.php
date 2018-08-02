@@ -16,7 +16,7 @@ class NevermindTest extends TestCase
 
 
 
-    public function Send_start(){
+    public function testSend_start(){
         $json_result = $this->NM->send_start();
         $result = json_decode($json_result,true);
 
