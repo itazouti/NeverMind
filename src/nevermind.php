@@ -45,7 +45,7 @@ class nevermind
         for($i=0;$i<$this->size;$i++) {
             $random .= rand(0, 9); //"12345";
         }
-        //$this->to_find = $random; //str_pad($random, $this->size, "0", STR_PAD_LEFT);
+        $this->to_find = $random; //str_pad($random, $this->size, "0", STR_PAD_LEFT);
         //$this->to_find = '135792468013579';
         //$this->to_find = '34680818';
         //$this->to_find = '53375480';
