@@ -26,9 +26,6 @@ class nevermind
         $this->token = "tokennm";
         $this->name = "NeverMind";
         $this->current_value = '';
-        $this->ciffer = 0;
-        $this->current_column = 0;
-        $this->current_row = 0;
         $this->aValidCiffer = array();
         $this->aInvalidCiffer = array();
         $this->validCiffer = '';
