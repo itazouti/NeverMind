@@ -13,9 +13,4 @@ script:
     - vendor/bin/phpunit --coverage-clover coverage.xml
 
 after_success:
-     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-             pip install codecov;
-       elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
-             pip3 install codecov;
-       fi
-     - codecov
+  - bash <(curl -s https://codecov.io/bash)
