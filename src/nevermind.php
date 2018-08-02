@@ -39,16 +39,16 @@ class nevermind
 
 
     public function init() {
-        $this->size = 15;
+        $this->size = 8;
         $this->quizz_id = 1;
         $random = '';
         for($i=0;$i<$this->size;$i++) {
             $random .= rand(0, 9); //"12345";
         }
-        $this->to_find = $random; //str_pad($random, $this->size, "0", STR_PAD_LEFT);
+        //$this->to_find = $random; //str_pad($random, $this->size, "0", STR_PAD_LEFT);
         //$this->to_find = '135792468013579';
         //$this->to_find = '34680818';
-        //$this->to_find = '53375480';
+        $this->to_find = '53375480'; //for test
         //$this->to_find = '217038454166809';
         if(!empty($this->to_find)) {
             $this->log("TO FIND:".$this->to_find);
@@ -59,7 +59,7 @@ class nevermind
         //send start
         $json_result = $this->send_start();
         $result = json_decode($json_result,true);
-        $this->size = $result['size'];
+        $this->size = (isset($result['size'])) ? $result['size'] : $this->size;
         $this->quizz_id = $result['quizz_id'];
     }
     
@@ -104,13 +104,14 @@ class nevermind
             $this->log("FOUND : ".$this->current_value);
             exit();    
         }
-        
+
         $getdata = http_build_query(
             array(
                 'result' => $this->current_value,
                 'token' => $this->token
             )
         );
+
         $opts = array('http' =>
             array(
                 'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
@@ -177,6 +178,7 @@ class nevermind
     
     private function stat() {
         $this->log('SIZE : '.$this->size);
+        $this->log('GOOD : '.$this->good);
         if(!empty($this->to_find)) {
             $this->log('TO FIND : '.$this->to_find);
         }
@@ -204,8 +206,8 @@ class nevermind
                 exit;
             }
             
-            //$json_result = $this->send_test();
-            $json_result = $this->test_result();
+            $json_result = $this->send_test();
+            //$json_result = $this->test_result();
             $result = json_decode($json_result,true);
             $this->good = $result['good'];
             $wrong_place = $result['wrong_place'];
@@ -372,6 +374,9 @@ class nevermind
             $iCiffer = 0;
             $ciffer_to_test = '';
             
+            $aUniqueValidCiffer = array_unique($this->aValidCiffer);
+            $aUniqueValidCiffer = array_values($aUniqueValidCiffer);
+            
             do {
                 $this->log($this->count_call_api.'###########################################');
                 $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer).' UNIQUE : '.implode(',',$aUniqueValidCiffer));
@@ -386,8 +391,8 @@ class nevermind
                 }
     
                 //send test
-                //$json_result = $this->send_test();
-                $json_result = $this->test_result();
+                $json_result = $this->send_test();
+                //$json_result = $this->test_result();
                 $result = json_decode($json_result,true);
                 $this->good = $result['good'];
     
