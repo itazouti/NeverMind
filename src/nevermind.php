@@ -72,10 +72,6 @@ class nevermind
         echo $str."\n";
     }
     
-    private function trace() {
-        $this->log("COLUMN:".$this->current_column." ROW: ".$this->current_row." CIFFER: ".$this->ciffer." CUR:".$this->get_value_to_string());
-    }
-    
     private function send_start() {
 
         $url = "http://172.16.37.129/api/start";
@@ -160,9 +156,10 @@ class nevermind
                     if($aCurVal[$i] == $aToFind[$j]){
                         //$this->log(">> J: ".$j." CURVAL:".$aCurVal[$i]." == TOFIND:".$aToFind[$j]);
                         $wrong_place++;
-                    } else {
+                    } 
+                    //else {
                         //                       $this->log(">> J: ".$j." CURVAL:".$aCurVal[$i]." != TOFIND:".$aToFind[$j]);
-                    }    
+                    //}    
                 }
             }
         }
@@ -219,7 +216,6 @@ class nevermind
             $result = json_decode($json_result,true);
             $this->good = $result['good'];
             $wrong_place = $result['wrong_place'];
-            //$this->error = $result['Error'];
             //$this->log("VALUE: ".$this->current_value." GOOD:".$this->good);
             $this->aNumberStatus[] = $this->good;
             if(isset($result['Error']) && !empty(isset($result['Error']))) {
@@ -246,7 +242,6 @@ class nevermind
                     $this->iSmallerOccurence = $i;
                 }
             }
-            //$this->trace();
             
             //IF ALL GOOD => EXIT
             if($count_good == $this->size) {
@@ -294,7 +289,6 @@ class nevermind
                 $this->log('###########################################');
                 $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
                 
-                //var_dump($this->aValidCiffer);
                 // test ciffer à la position pos
                 $this->current_value[$pos] = $this->aValidCiffer[$iCiffer];
 
@@ -322,8 +316,6 @@ class nevermind
                 $iCiffer++;
                 
                 $this->log('PREV GOOD :'.$previous_good.' GOOD :'.$this->good.' POS : '.$pos.' ICIF : '.$iCiffer.' VALID : '.implode(",",$this->aValidCiffer).' INVALID : '.implode(",",$this->aInvalidCiffer));
-                
-                //$this->log('PREV_GOOD :'.$previous_good.' == GOOD :'.$this->good);
                 
                 if ($previous_good > $this->good) {
                     if (empty($previous_value)) {
