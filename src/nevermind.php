@@ -134,13 +134,13 @@ class nevermind
         $this->count_call_api++;
         
         $good = 0;
-        $wrong_place = 0;
-        
+
         $aCurVal = str_split($this->current_value);
         $aToFind = str_split($this->to_find);
         
         // FIND GOOD AND FIND WRONG PLACE
         for($i=0;$i<strlen($this->to_find);$i++) {
+            $wrong_place = 0;
             if($aCurVal[$i] == $aToFind[$i]){
                 //$this->log("I: ".$i." CURVAL:".$aCurVal[$i]." == TOFIND:".$aToFind[$i] );
                 $good++;
@@ -159,7 +159,6 @@ class nevermind
                 }
             }
         }
-        
         $this->log("SEND TEST : [".$this->current_value."]");
 
         $json = json_encode(array("good"=>$good,"wrong_place"=>$wrong_place));
@@ -199,7 +198,6 @@ class nevermind
             $wrong_place = 0;
     
             $this->current_value = str_repeat("$i",$this->size);
-            
             //send test
             if ($this->current_value == $this->to_find) {
                 $this->stat();
@@ -275,7 +273,7 @@ class nevermind
             $previous_value = "";
         }
         
-        //test chaque chiffre puis passe a la position suivante lorsque goot est incrémenté
+        //test chaque chiffre puis passe a la position suivante lorsque goot est incrï¿½mentï¿½
         for($pos=0;$pos<$this->size;$pos++) {
             
             $iCiffer = 0;
@@ -284,7 +282,7 @@ class nevermind
                 $this->log('###########################################');
                 $this->log('POSITION : '.$pos.' ICIFFER : '.$iCiffer.' VALID : '.implode(',',$this->aValidCiffer));
                 
-                // test ciffer à la position pos
+                // test ciffer ï¿½ la position pos
                 $this->current_value[$pos] = $this->aValidCiffer[$iCiffer];
 
                 if ($this->current_value == $this->to_find) {
@@ -332,11 +330,11 @@ class nevermind
             
             $previous_good = $this->good;
             
-            // ajouter le chiffre trouvé à la liste des invalid.
+            // ajouter le chiffre trouvï¿½ ï¿½ la liste des invalid.
             $this->aInvalidCiffer[] = $this->aValidCiffer[$iCiffer-1];
             $this->invalidCiffer .= $this->validCiffer[$iCiffer-1];
             
-            // retire le chiffre trouvé de la liste
+            // retire le chiffre trouvï¿½ de la liste
             unset($this->aValidCiffer[$iCiffer-1]);
             $this->aValidCiffer = array_values($this->aValidCiffer);
             substr($this->validCiffer, $iCiffer-1, 1);
