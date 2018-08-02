@@ -2,6 +2,9 @@ language: php
 php:
   - 7.0
 
+install:
+  - pip install tox
+  - pip install tox codecov
 
 
 
@@ -11,11 +14,10 @@ before_script:
 
 script:
     - vendor/bin/phpunit --coverage-clover coverage.xml
+    - tox
+
+
 
 after_success:
-     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-             pip install codecov;
-       elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
-             pip3 install codecov;
-       fi
+
      - codecov
